@@ -67,16 +67,22 @@ Gisele_subset$preference
 a) Create a vector named `my_vec` that includes all integers from 1 to 10 (inclusive).
 ```{r}
 my_vec <- c(1:10)
+my_vec
 ```
 b) Replace the second element in `my_vec` with the number `99`.
 ```{r}
+my_vec <- c(1:10)
 my_vec[2] <- 99
+my_vec
 ```
 c) Write a function called `my_func` that prints `This element is greater than 5!` if an element in `myvec` is greater than 5, and `This element is NOT greater than 5!` otherwise.
 ```{r}
-my_func <- function(myvec) {
-  if (length(myvec) > 5) {
+my_func <- function(element) {
+  if (my_vec[element] > 5) {
     print("This element is greater than 5!")
+  }
+  else {
+    print("This element is NOT greater than 5!")
   }
 }
 
