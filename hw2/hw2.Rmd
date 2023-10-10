@@ -9,6 +9,7 @@ output:
   pdf_document: default
 subtitle: Data 180, Professor Kennedy
 ---
+18/20. Good job.
 
 Make sure that you have accepted the hw invitation link, and working with your clone repository.
 
@@ -107,6 +108,9 @@ hist((Cars93$Passengers),cex.lab=1.2,cex.axis=1.2,col="lightblue",xlab="Passenge
 b) Correct the problem in part (a) by creating a more appropriate visualization. Make sure to label your axes, place a title, choose a custom color as in the previous graphs. (Bonus: use factor() with levels option to display x axis values with no observations on the plot.)
 ```{r}
 barplot(table(Cars93$Passengers),ylab="Frequency",cex.lab=1.2,col=c(2,3,4),main="Passengers")
+
+
+## This bar plot should show the frequency of cars that carry 1 and 3 passengers as 0 (-2)
 ```
 
 ## Task 4 
