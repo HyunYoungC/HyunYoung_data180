@@ -9,6 +9,7 @@ output:
   html_document
 ---
 
+20/20. Good job
 Make sure that you have accepted the hw invitation link, and working with your clone repository.
 
 **Due date:** October 12 beginning of class.
