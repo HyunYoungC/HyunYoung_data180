@@ -1,4 +1,4 @@
-Cluster_Ex<-read.csv("D:/Dickinson College Teaching/DATA 180/data/Cluster_Ex.csv") #"Path where your data is goes here"
+Cluster_Ex<-read.csv("/Users/young/Documents/college/dickinson/2023-2024/data_HyunYoung/HyunYoung_data180/Cluster_Ex.csv") #"Path where your data is goes here"
 ls(Cluster_Ex)
 head(Cluster_Ex)
 
@@ -26,7 +26,7 @@ names(Cluster_Ex)
 names(Cluster_Ex)<-c("X","X1","X2","k_3","k_4","k_5")
 head(Cluster_Ex)
 
-Cluster_Ex<-read.csv("D:/Dickinson College Teaching/DATA 180/data/Cluster_Ex_clusters.csv")
+Cluster_Ex<-read.csv("/Users/young/Documents/college/dickinson/2023-2024/data_HyunYoung/HyunYoung_data180/Cluster_Ex.csv")
 
 #plot the clusters
 plot(X2~X1,data=Cluster_Ex,xlim=c(0,4),ylim=c(0,4),cex.axis=1.3,cex.lab=1.2,cex=1.2,pch=15+k_3,col=k_3)
