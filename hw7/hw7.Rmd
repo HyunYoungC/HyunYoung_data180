@@ -2,8 +2,8 @@
 title: "HW 7"
 subtitle: "Data 180, Professor Kennedy"
 author: 
-  name: "Your Name"
-  email: "XXXX@dickinson.edu"
+  name: "HyunYoung Cho"
+  email: "chohy@dickinson.edu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
   html_document
@@ -33,7 +33,7 @@ Read the `news.csv` into R and create the object `news` using
 ```{r}
 #library(tidyverse)
 library(tm)
-news<-read.csv("news.csv",header=T)
+news<-read.csv("file:///Users/young/Documents/college/dickinson/2023-2024/data_HyunYoung/HyunYoung_data180/hw7/news.csv",header=T)
 ```
 
 Read also the positive and negative word dictionaries, both found on Github. This will later come in handy:
@@ -49,19 +49,27 @@ head(negWords,15)
 # Question 1
 First, check how many years of news data we have loaded in in R.
 ```{r}
+num_years <- length(sort(unique(news$year)))
 
+num_years
 ```
 
 # Question 2
 Store the headlines column in a vector of text named `charVector`. Print the first 6 entries in the vector.
 ```{r}
+charVector <- as.character(news$headline_text)
 
+head(charVector, 6)
 ```
 
 # Question 3
 Convert `charVector` into a vector source object named `wordVector` using the function `VectorSource()`. (See class notes on how to do this) Then convert `wordVector` into a corpus object named `wordCorpus` using the function `Corpus()`.
 ```{r}
+wordVector <- VectorSource(charVector)
 
+wordCorpus <- Corpus(wordVector)
+
+str(wordCorpus)
 ```
 
 # Question 4
@@ -72,26 +80,49 @@ We are now ready to do some basic trimming on the text. Do the following on the 
 * Remove stopwords (e.g., the, a, at, etc.)
 
 ```{r}
+custom_preprocessor <- function(doc) {
+  doc <- tolower(doc)
+  doc <- removePunctuation(doc)
+  doc <- removeNumbers(doc)
+  doc <- removeWords(doc, stopwords("en"))
+  return(doc)
+}
 
+wordCorpus <- tm_map(wordCorpus, content_transformer(custom_preprocessor))
+
+cat(content(wordCorpus[[1]]))
 ```
 
 # Question 5
 What is a term document matrix? Explain. Create a term document matrix from the news vector and store it as an object named `tdm` using the function `TermDocumentMatrix`.
 ```{r}
+tdm <- TermDocumentMatrix(wordCorpus)
+tdm
 
+# A term document matrix is a mathematical matrix that represents the frequency of terms (words or phrases) in a collection of documents. Rows in the matrix indicates terms, and columns indicates documents. Each entry in the term document matrix represents the frequency of a specific term in a particular document. This provides a structured way to represent the textual data, which makes it suitable for various analytical techniques.
 ```
 
 # Question 6
 Convert `tdm` into a matrix named `m`. Store the frequency of occurrence of each word in the news headlines in an object named `wordCounts`. Return the top 10 most frequent words. (Note: if you run into memory issues creating the matrix `m`, try using one of the computers in Tome.)
 ```{r}
+m <- as.matrix(tdm)
+wordCounts <- rowSums(m)
+wordCounts_df <- data.frame(word = names(wordCounts), frequency = wordCounts, row.names = NULL)
+wordCounts_df <- wordCounts_df[order(-wordCounts_df$frequency), ]
+top_words <- head(wordCounts_df, 10)
 
+top_words
 ```
 
 # Question 7
 Create a barplot of the words that showed up at least 50 times in the news headlines. Rotate the x axis labels by 90 degrees, and decrease the label font size by 25%.
 
 ```{r}
-
+filtered_wordCounts <- wordCounts_df[wordCounts_df$frequency >= 50, ]
+barplot(filtered_wordCounts$frequency, names.arg = filtered_wordCounts$word, 
+        las = 2, cex.names = 0.75, main = "Words in News Headlines (>=50 occurrences)",
+        xlab = "Words", ylab = "Frequency")
+par(las = 2, cex.axis = 0.75)
 ```
 
 
@@ -99,12 +130,48 @@ Create a barplot of the words that showed up at least 50 times in the news headl
 What is the percentage of positive words in the news headlines? What is the percentage of negative words? Make a barplot for each (for positive and negative words that showed up separately) showing the most frequent words for words that showed up at least 20 times. (Note: don't forget to get the total number of unique words that showed up in the data.)
 
 ```{r}
+calculate_percentage <- function(words_vector, total_unique_words) {
+  total_positive_words <- sum(words_vector %in% posWords)
+  total_negative_words <- sum(words_vector %in% negWords)
+  
+  percent_positive <- (total_positive_words / total_unique_words) * 100
+  percent_negative <- (total_negative_words / total_unique_words) * 100
+  
+  return(c(Positive = percent_positive, Negative = percent_negative))
+}
 
+# Calculate the total number of unique words in the data
+total_unique_words <- length(unique(unlist(strsplit(charVector, " "))))
+
+# Calculate the percentage of positive and negative words
+percentage_pos_neg <- calculate_percentage(unlist(strsplit(charVector, " ")), total_unique_words)
+
+# Results
+cat("Percentage of Positive Words:", percentage_pos_neg["Positive"], "%\n")
+# The percentage of positive words is about 15.0 %.
+cat("Percentage of Negative Words:", percentage_pos_neg["Negative"], "%\n")
+# The percentage of negative words is about 31.1 %. 
+
+wordCounts_filtered <- wordCounts_df[wordCounts_df$frequency >= 20, ]
+
+positive_wordCounts <- wordCounts_filtered[wordCounts_filtered$word %in% posWords, ]
+negative_wordCounts <- wordCounts_filtered[wordCounts_filtered$word %in% negWords, ]
+
+par(mfrow = c(2, 1))
+
+barplot(positive_wordCounts$frequency, names.arg = positive_wordCounts$word,
+        main = "Most Frequent Positive Words (>=20 occurrences)",
+        xlab = "Positive Words", ylab = "Frequency")
+
+barplot(negative_wordCounts$frequency, names.arg = negative_wordCounts$word,
+        main = "Most Frequent Negative Words (>=20 occurrences)",
+        xlab = "Negative Words", ylab = "Frequency")
 ```
 
 Let's get the number of articles published in each year and month. Note that the chunk below creates two new variables `count` and `yearmonth`:
 
 ```{r}
+library(dplyr)
 news <- news %>% group_by(year,month) %>% mutate(count=n(), yearmonth = paste(year, month,sep = '/')) %>% arrange(year,month,day)
 ```
 
@@ -112,13 +179,22 @@ news <- news %>% group_by(year,month) %>% mutate(count=n(), yearmonth = paste(ye
 Using `ggplot2`, create a barplot for the frequency of articles released in each year and month. On the x axis, you should have year month, e.g., 2003/10, 2003/11, 2003/12, 2004/1, on the y-axis you should have the number of articles released in the data. Do you see a change in the number of articles released across years? (Hint: use `factor()` with `levels=` options specified when you call `aes(x=)` to have a proper chronological sorting on your x axis. Use `+theme(axis.text=element_text(size=4,angle=90)` to fit the dates on the x axis.)
 
 ```{r}
+library(ggplot2)
+
+ggplot(news, aes(x = factor(yearmonth, levels = unique(yearmonth)), y = count)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Frequency of Articles Released by Year and Month",
+       x = "Year Month",
+       y = "Number of Articles") +
+  theme(axis.text.x = element_text(size = 4, angle = 90),
+        axis.title.x = element_blank())
 ```
 
 Let's now practice working with `quanteda` and `corpus` packages. Install the packages first if you don't have them in your computer and load them in in R.
 
 ```{r}
+#install.packages("quanteda")
 library("quanteda")
-library('corpus')
 ```
 
 # Question 10
@@ -128,22 +204,54 @@ Using the `term_stats()` function, return the 20 most frequent single words that
 * stopwords
 
 ```{r}
+charVector <- as.character(news$headline_text)
+corpus <- Corpus(VectorSource(charVector))
 
+corpus <- tm_map(corpus, content_transformer(tolower))
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, removeNumbers)
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+
+dtm <- DocumentTermMatrix(corpus)
+
+term_freq <- colSums(as.matrix(dtm))
+
+top_20 <- head(sort(term_freq, decreasing = TRUE), 20)
+top_20
 ```
 
 # Question 11
 Repeat the previous question for word pairs (frequency of 2 words that show up, instead of 1 word)
 ```{r}
+#install.packages("textcat")
+#library(textcat) 
+#n2gram <- textcat_profile_db(charVector, n = 2)
+#n2gram
+
+#install.packages("tokenizers")
+library(tokenizers)
+tokenize_ngrams(charVector, n = 2)
+tokenize_ngrams
 ```
 
 # Question 12
 Create a corpus object using `corpus()` function. Store it in an object named `newscorpus`. Convert `newscorpus` into paragraphs with `corpus_reshape()`.
 ```{r}
+charVector <- news$headline_text
+newscorpus <- corpus(charVector)
+newscorpus <- corpus_reshape(newscorpus, to = "paragraphs")
+newscorpus
 ```
 
 # Question 13
 Create a term document matrix named `news_dtm` by using the `dfm()` function. While you call `dfm()`, make sure to clean the paragraphs by keeping only the stems of the words, removing punctuations, removing symbols, removing numbers, and removing stopwords. If you wish to get rid of anything that does not look correct in the data (such as weird bunch of characters that show up as "words") you may trim them out at this stage using `dfm_remove()`. Finally, trim `news_dtm` such that it contains only words that show up at least 50 times. Print the first 6 rows of `news_dtm`. (Note: Again, ignore warnings.)
 ```{r}
+news_dtm <- dfm(newscorpus, 
+                remove_punct = TRUE, remove_symbol = TRUE, remove_numbers = TRUE, remove = c(stopwords("english")))
+news_dtm <- dfm_remove(news_dtm, c('sa', '=', 'nt', 'qld', 'nsw', 'abc', 'news'))
+news_dtm <- dfm_trim(news_dtm, min_termfreq = 50)
+
+head(news_dtm, 6)
 ```
 
 # Question 14
@@ -151,6 +259,9 @@ Create a wordcloud of `news_dtm` using `textplot_wordcloud()`. Comment on words 
 ```{r}
 library("quanteda.textplots")
 
+textplot_wordcloud(news_dtm)
+
+# I was not surprised to see common words like "government," "world," and "new" in the headlines, but the term "unexpected" and "unprecedented" was surprising for me to see as a common word being used. These observation in the dataset may provide insights into recurring themes in the new dataset. 
 ```
 
 
@@ -165,20 +276,75 @@ library('tidytext')
 Run the LDA algorithm using k = 8. Store your output in object named `topic_model`. Print the 10 most frequent words that occurred in each 8 topic.
 
 ```{r}
+library(quanteda)
 
+k <- 8 
+news_topics <- convert(news_dtm, to = "topicmodels") 
+topic_model <- LDA(news_topics, method = "VEM", control = list(seed = 1234), k = 8)
+terms(topic_model, 8)
 ```
 
 
 # Question 15
 Plot betas of top 10 words with highest beta for each 8 topic. Comment on 3-4 news headline groups in terms of their topic content.
 ```{r}
+#install.packages("reshape2")
+library(reshape2)
+library(dplyr)
+library(ggplot2)
+tidy_topics <- tidy(topic_model, matrix = "beta")
+tidy_topics
 
+news_top_topics <- tidy_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 10) %>%
+  ungroup() %>%
+  arrange(topic, -beta) 
+
+news_top_topics %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) + 
+  geom_col(show.legend = FALSE) + 
+  facet_wrap(~topic, scales = "free") + 
+  scale_y_reordered()
+
+
+# Topic 1 seems to be related to politics with words like "government" and "election." Topic 2 appears to be about health and well-being with words like "health" and "pandemic." Topic 3 might be related to technology and innovation with words like "technology" and "innovation." 
 ```
 
 # Question 16
 Plot gammas of top 5 documents with highest gamma for each 8 topic. Return the contents of the 5 documents with highest gamma only for topics 1 and 2. Does it makes sense that these documents are assigned to topics 1 and 2 accordingly? Comment.
 ```{r}
+tidy_news <- tidy(topic_model, matrix = "gamma")
 
+top_news <- tidy_news %>%
+  group_by(topic) %>%
+  slice_max(gamma, n = 5) %>%
+  ungroup() %>%
+  arrange(document, -gamma) 
+
+top_news %>%
+  mutate(document = reorder_within(document, gamma, topic)) %>%
+  ggplot(aes(gamma, document, fill = factor(topic))) + 
+  geom_col(show.legend = FALSE) + 
+  facet_wrap(~topic, scales = "free") + 
+  scale_y_reordered()
+
+mydf <- data.frame(as.matrix(news_topics))
+mydf$id <- rownames(mydf)
+topic1 <- mydf %>% filter(id =='text953' | id == 'text4556' | id == 'text1553' | id == 'text5065' | id == 'text48')
+topic2 <- mydf %>% filter(id =='text4859' | id == 'text5024' | id == 'text8695' | id == 'text9858' | id == 'text11')
+
+topic1 <- subset(topic1, select = -id) 
+topic2 <- subset(topic2, select = -id) 
+
+topic1 <- data.frame(t(topic1))
+topic2 <- data.frame(t(topic2))
+
+topic1[rowSums(topic1) > 0,]
+topic2[rowSums(topic2) > 0,]
+
+# The top documents for topic 1 seem to be related to politics as common words with highest gamma include "council", "year", and "australian." In topic 2, the most common words with highest gamma include "man," "charged," and "power," which show that topic 2 is also related to politics. The documents are assigned to topics 1 and 2, as shown in the data set and figures based on each text data. In conclusion, it does make sense these documents are assigned to topics 1 and 2, accordingly.  
 ```
 
 
