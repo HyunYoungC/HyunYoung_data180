@@ -10,7 +10,7 @@ output:
 editor_options: 
   chunk_output_type: console
 ---
-
+20/20. Good job. 
 **Due date:** December 4 beginning of class.
 
 
@@ -33,7 +33,7 @@ Read the `news.csv` into R and create the object `news` using
 ```{r}
 #library(tidyverse)
 library(tm)
-news<-read.csv("file:///Users/young/Documents/college/dickinson/2023-2024/data_HyunYoung/HyunYoung_data180/hw7/news.csv",header=T)
+news<-read.csv("D:/Dickinson College Teaching/DATA 180/hw7/news.csv",header=T)
 ```
 
 Read also the positive and negative word dictionaries, both found on Github. This will later come in handy:
