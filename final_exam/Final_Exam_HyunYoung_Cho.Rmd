@@ -9,7 +9,7 @@ output:
   html_document
 ---
 **Due date:** December 15th at 11:59 pm EST.
-
+40/40. This is very well done Cho. Good job. 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Question 1 - Data wrangling:
 a.	What is the dimension (shape) of the dataset?  How many rows and columns does the data set have?
 ```{r}
-loan_default_data <- read.csv("/Users/young/Documents/college/dickinson/2023-2024/data_HyunYoung/HyunYoung_data180/final_exam/loan_default_data_set.csv")
+loan_default_data <- read.csv("C:/Users/rodge/OneDrive/Desktop/DATA 180 -Intoduction to Data Science/DATA-180-Introduction-to-Data-Science--Section-2/data/loan_default_data_set.csv")
 
 dataset_dimension <- dim(loan_default_data)
 rows <- dataset_dimension[1]
@@ -40,7 +40,7 @@ c.	Which types of data are there in the dataset? Numeric, categorical, ordinal?
 
 d.	Which columns contain missing values and how much (what percent) of those columns are missing?
 ```{r}
-loan_default_data <- read.csv("/Users/young/Documents/college/dickinson/2023-2024/data_HyunYoung/HyunYoung_data180/final_exam/loan_default_data_set.csv")
+loan_default_data <- read.csv("C:/Users/rodge/OneDrive/Desktop/DATA 180 -Intoduction to Data Science/DATA-180-Introduction-to-Data-Science--Section-2/data/loan_default_data_set.csv")
 
 missing_columns <- colnames(loan_default_data)[colSums(is.na(loan_default_data)) > 0]
 missing_percentages <- colSums(is.na(loan_default_data[, missing_columns])) / nrow(loan_default_data) * 100
