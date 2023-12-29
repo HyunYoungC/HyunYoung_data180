@@ -1,0 +1,204 @@
+---
+title: "Final Exam"
+subtitle: "Data 180, Professor Kennedy"
+author: 
+  name: "HyunYoung Cho"
+  email: "chohy@dickinson.edu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document
+---
+**Due date:** December 15th at 11:59 pm EST.
+40/40. This is very well done Cho. Good job. 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Question 1 - Data wrangling:
+a.	What is the dimension (shape) of the dataset?  How many rows and columns does the data set have?
+```{r}
+loan_default_data <- read.csv("C:/Users/rodge/OneDrive/Desktop/DATA 180 -Intoduction to Data Science/DATA-180-Introduction-to-Data-Science--Section-2/data/loan_default_data_set.csv")
+
+dataset_dimension <- dim(loan_default_data)
+rows <- dataset_dimension[1]
+columns <- dataset_dimension[2]
+
+#The dimension of the dataset given is 20000 x 21 (n x p). The data set has 20000 rows and 21 columns. 
+```
+
+b.	Report the column names of the data set.
+```{r}
+column_names <- colnames(loan_default_data)
+
+cat("The column names of the dataset are:", paste(column_names, collapse = ", "), "\n")
+```
+
+c.	Which types of data are there in the dataset? Numeric, categorical, ordinal?
+```{r}
+#The types of data present in the dataset include numeric(quantitative), and categorical(qualitative)-ordinal data types. The numeric(quantitative) data type, which is a variable that measures a numerical characteristics can be found in the dataset: tot_balance, avg_bal_cards, credit_age, and etc. The ordinal data type from categorical(qualitative) represents the variables that classifies the unites into categories and have a natural ordering to them. The examples of ordinal data from categorical(qualitative) data types can be found as following: high_school, college, and graduate. Thus, there are numerical and categorical - ordinal data types present in the dataset. 
+```
+
+d.	Which columns contain missing values and how much (what percent) of those columns are missing?
+```{r}
+loan_default_data <- read.csv("C:/Users/rodge/OneDrive/Desktop/DATA 180 -Intoduction to Data Science/DATA-180-Introduction-to-Data-Science--Section-2/data/loan_default_data_set.csv")
+
+missing_columns <- colnames(loan_default_data)[colSums(is.na(loan_default_data)) > 0]
+missing_percentages <- colSums(is.na(loan_default_data[, missing_columns])) / nrow(loan_default_data) * 100
+
+cat("Columns with missing values and their respective percentages:\n")
+for (i in seq_along(missing_columns)) {
+  cat(missing_columns[i], ":", missing_percentages[i], "%\n")
+}
+
+#The columns which contain missing values are 'pct_card_over_50_uti' and 'rep_income'. The percentage of the column 'pct_card_over_50_uti' is 9.79%, and the percentage of the column 'rep_income' is 7.795%. 
+```
+
+e.	How do you think we should deal with missing values? 
+```{r}
+#There are several strategies to deal with missing values. First of all, we can impute the missing values with the mean, median, or mode in the column, which helps maintaining the size of the dataset while filling in the missing values in the column. For example, we can impute the missing values in a numeric column with the mean by using following code: "loan_default_data$numeric_column[is.na(loan_default_data$numeric_column)] <- mean(loan_default_data$numeric_column, na.rm = TRUE)". Secondly, we can omit the rows with missing values if the number of rows with missing values is relatively small and doesn't significantly impact or change the dataset. The following method can be done by using na.omit() function. Thirdly, we can create a missing indicator by creating a new binary column, which represents whether a value was missing in the original column. Through this, we can preserve information about the missing value in the column. Finally, there is a method using an advanced imputation method with multiple imputation or machine learning-based methods. This method predicts the missing values by using other variables in the dataset and fills the missing values in the column. 
+```
+
+f.	With this data, would you fit a supervised or an unsupervised learning model? Why? 
+```{r}
+#With this data, supervised learning model would fit more likely than unsupervised learning model. This is because this loan default dataset given represents the historical data containing binary response and predictor variables from credit card accounts for bank XYZ, which correspond to the object and goal of supervised learning model. Supervised learning can be used when there are observations that is composed of predictor and response variables. Since the primary goal of supervised learning is to utilize the relationship between the predictor and response variables for prediction and inference based on the observations. One of examples of supervised learning algorithms include regression for predicting numerical values and classification for predicting categorical outcomes. Therefore, this loan default dataset fits with supervised learning model since it has predictor and response variables for prediction and inference based on the observations. 
+```
+
+g.	For part 2 and 3 drop all rows of the data that contain missing values. Print the dimensions of the resulting data set that has no missing values.
+```{r}
+loan_default_data_no_missing <- na.omit(loan_default_data)
+
+dataset_dimension_no_missing <- dim(loan_default_data_no_missing)
+rows_no_missing <- dataset_dimension_no_missing[1]
+columns_no_missing <- dataset_dimension_no_missing[2]
+
+cat("The dimension of the dataset with no missing values is:", rows_no_missing, "rows and", columns_no_missing, "columns.")
+```
+
+# Question 2 - Data summary statistics:
+a.	Find the summary statistics of the data set. You can use the summary function from dplyr. 
+```{r}
+#install.packages("dplyr")
+library(dplyr)
+summary_statistics <- summary(loan_default_data_no_missing)
+summary_statistics
+```
+
+b.	Based on the mean, mode, and median, is “num_card_inq_24_month” bell shaped, left, right skewed? How about “tot_amount_currently_past_due”? “credit_age”? 
+```{r}
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+variable_names <- c("num_card_inq_24_month", "tot_amount_currently_past_due", "credit_age")
+
+determine_skewness <- function(variable, variable_name) {
+  mean_value <- mean(variable)
+  median_value <- median(variable)
+  mode_value <- Mode(variable)
+
+  cat("Variable:", variable_name, "\n")
+  cat("Mean:", mean_value, ", Median:", median_value, ", Mode:", mode_value, "\n", "\n")
+}
+
+for (variable_name in variable_names) {
+  determine_skewness(loan_default_data_no_missing[[variable_name]], variable_name)
+}
+
+#For 'num_card_inq_24_month' variable, the mean is 1.044, median is 0, and mode is 0. Since the mean is bigger than median, 'num_card_inq_24_month' is right-skewed. 
+#For 'tot_amount_currently_past_due' variable, the mean is 354.2, median is 0, and mode is 0. Since the mean is bigger than median, 'tot_amount_currently_past_due' is right-skewed. 
+#For 'credit_age' variable, the mean is 280.9, median is 281.0, and mode is 295. Since the mean is approximately equal to median, 'credit_age' is approximately symmetric or bell-shaped.
+```
+
+c.	Plot a histogram of the variables in b above. Do the shapes of the histograms confirm the skewness you found in b?
+```{r}
+variables_to_plot <- c("num_card_inq_24_month", "tot_amount_currently_past_due", "credit_age")
+
+
+plot_histogram_and_skewness <- function(variable, variable_name) {
+  hist(variable, main = paste("Histogram of", variable_name), xlab = variable_name, col = "lightblue", border = "black")
+  abline(v = mean(variable), col = "red", lwd = 2)
+  abline(v = median(variable), col = "blue", lwd = 2)
+  legend("topright", legend = c("Mean", "Median"), col = c("red", "blue"), lwd = 2)
+}
+
+par(mfrow = c(1, 3))
+for (variable_name in variables_to_plot) {
+  plot_histogram_and_skewness(loan_default_data_no_missing[[variable_name]], variable_name)
+}
+par(mfrow = c(1, 1))
+
+# Yes, since the shape of the distribution for "num_card_inq_24_month" variable is right-skewed, "tot_amount_currently_past_due" variable is right-skewed, and "credit_age" variable is approximately symmetric or bell-shaped, the shapes of the histograms confirm the skewness I found in part b.
+```
+
+d.	How would your convert the “rep_education” column into numerical data? Name two ways. 
+```{r}
+#Natural Language Tool Kit(NLTK) and Term Frequency-Inverse Document Frequency(TF-IDF) methods can convert the "rep_education" column into numerical data. Natural Language Took Kit, which is a suite of libraries and programs for statistical natural language processing for English written in the programming supports classification, tokenization, and other semantic reasoning functionalities. Thus, NLTK method is one way to convert the "rep_education" column into numerical data. Also, Term Frequency-Inverse Document Frequency handles with a numerical statistic that is used to reflect and contain the importance of a text in a document relative to a collection of documents, considering both its frequency and rarity. Through TK-IDF tool, the "rep_education" column can be converted into numerical data based on the frequency and rarity of words in a document. 
+
+#Additionally, another method could be manually mapping the categories to numerical values using a predefined dictionary. For example, the following code can be used for manual mapping of categories to numerical values: education_mapping <- c("High School" = 1, "College" = 2, "Bachelor's" = 3, "Master's" = 4, "Doctorate" = 5). By creating a mapping dictionary, the "rep_education" column can be converted into numerical data, and this method is especially useful in "rep_education" column since this method can deal with ordinal relationship among categories, allowing to explicitly control the mapping. 
+```
+
+# Question 3 - Data Visualization:
+For every graph in this section, remember to label your axes and to include a title. Feel free to play around with graphics and parameters. Have fun and explore!
+a.	Plot a bar graph for the “Def_Ind” column and describe it. 
+```{r}
+barplot(table(loan_default_data_no_missing$Def_ind), 
+        main = "Bar Graph for Def_ind",
+        xlab = "Def_ind",
+        ylab = "Frequency",
+        col = "skyblue",
+        border = "black")
+
+#The bar graph for "Def_ind” column is a graphical representation of the frequency distribution of values in the "Def_ind” column. The x-axis represents unique values in the "Def_ind” column, which could be categorical as 'no default' and 'default'. The y-axis represents the frequency or count of each unique value in "Def_ind” column. Each bar corresponds and matches with a unique value, and the height of the bars represents the frequency of each value in "Def_ind” column. By visualizing the data into a bar graph, it allows to explicitly understand the distribution that frequency of default values is higher than no default value in "Def_ind” column.
+```
+
+b.	Plot a bar graph for the “rep_education" column and describe it. 
+```{r}
+barplot(table(loan_default_data_no_missing$rep_education), 
+        main = "Bar Graph for rep_education",
+        xlab = "Education Level",
+        ylab = "Count",
+        col = "lightgreen",
+        border = "black",
+) 
+
+#The bar graph for “rep_education" column displays the distribution of education levels in the “rep_education" column. The x-axis represents the unique education levels which include college, graduate, high school, and other. The y-axis represents the count or frequency of each education level. Each bar corresponds and matches with a unique education level, and its height represents the frequency or count of that level in the dataset. Through visualization with bar graph for “rep_education" column, it helps to understand and see the distribution of education levels in the dataset. Based on the bar graph of “rep_education" distribution, the frequency of college is the highest and the frequency of high school education level is the second highest distribution in the “rep_education" column. The frequency of graduate is the third highest distribution and the frequency of others follows the next in the “rep_education" column.
+```
+
+c.	Plot a histogram of the “rep_income” variable.
+```{r}
+hist(loan_default_data_no_missing$rep_income, 
+     main = "Histogram of rep_income",
+     xlab = "Income",
+     ylab = "Frequency",
+     col = "lightcoral",
+     border = "black")
+
+#The histogram for "rep_income” variable displays the distribution of income in the “rep_income” variable. The x-axis represents income values, and y-axis represents the frequency or count of observations within each income range. The bars in the histogram show how the income values are distributed across the data set in the “rep_income” variable, and the data visualization for “rep_income” variable using histogram shows that the distribution of income range is approximately symmetric or bell-shaped. This visualization provides the insights into the distribution and concentration of income values in data set for "rep_income” variable that the distribution of income range is symmetrically distributed as mean and median are approximately equal.
+```
+
+d.	Plot a boxplot of the “tot_balance” variable. Using the box plot report the five number summary of the variable? Are there any outliers for this variable? 
+```{r}
+boxplot(loan_default_data_no_missing$tot_balance,
+        main = "Boxplot of tot_balance",
+        ylab = "Total Balance",
+        col = "lightblue",
+        border = "black")
+
+summary_tot_balance <- summary(loan_default_data_no_missing$tot_balance)
+cat("Five-Number Summary for tot_balance:\n")
+cat("Min:", summary_tot_balance[1], "\n")
+cat("1st Qu.:", summary_tot_balance[2], "\n")
+cat("Median:", summary_tot_balance[3], "\n")
+cat("3rd Qu.:", summary_tot_balance[4], "\n")
+cat("Max:", summary_tot_balance[5], "\n")
+
+outliers <- boxplot(loan_default_data_no_missing$tot_balance, plot = FALSE)$out
+if (length(outliers) > 0) {
+  cat("Potential Outliers:", outliers, "\n")
+}
+
+#For five number summary of “tot_balance” variable, the minimum is 0, 1st quartile is 92142, median is 107740, mean is 107503, 3rd quartile is 122932, and maximum is 200000. The IQR for “tot_balance” variable is Q3-Q1 = 122932-92142 = 30790. The lower fence(LF) is Q1-(1.5xIQR) = 92142-(1.5x30790) = 45957. The upper fence(UF) is Q3+(1.5xIQR) = 122932+(1.5x30790) = 169117. Therefore, any value below LF(= 45957) and any value above UF(= 169117) are considered outliers. Based on the boxplot and five number summary, there are outliers present in the “tot_balance” variable, which are shown in the following line. 
+
+#Outliers in “tot_balance” variable based on boxplot: 37213.81 176118.3 175548.2 174991.2 45908.84 172021.5 188251 177612.9 30917.23 31931.05 41069.3 31215.3 43069.16 33995.84 44202.58 44532.17 174821.7 39126.32 37189.69 45624.69 0 36256.21 30780.03 176207 45371.69 179531.1 45126.65 172831.9 37431.07 43972.68 41012.27 176225.8 172820.9 37724.46 173917.2 41043.34 170626.7 43349.1 175988.7 182871.6 44179.22 41462.38 44474.37 175710.4 169497.9 44099.11 38838.7 172062.1 45218.49 45238.39 173751.8 171941.5 2e+05 170562.1 169207.1 22812.25 42402.89 45528.07 171547.4 43154.35 45639 45068.05 175989.7 183558.7 174756.9 29795.5 186386.2 174318.3 172251.3 194486 173533.1 33319.34 39744.14 45505.23 36839.24 174664.6 36874.44 170056.6 169129.4 25018.42 169498 45355.74 32057.66 172878 172258.7 45905.18 43076.09 40345.16. 
+```
